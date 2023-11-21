@@ -1,74 +1,81 @@
+/*************************************
+ * ASA 2022/2023 - Pedro T. Monteiro *
+ *       projecto exemplo - P0       *
+ *************************************/
+#include <iostream>
 #include <list>
 #include <vector>
-#include <iostream>
 
-using namespace std;
+// Objectives:
+// . how to read input
+// . how to print output
+// . how to use c++ containers
+// . how to use an iterator
 
-list<int>* _graph;
-list<int>* _graphT;
-int _V, _E;
+// using namespace std; // not using this explicitly pedagogically
 
+unsigned int _V, _E;
+std::list<int>* _fwrAdjList;
+std::list<int>* _revAdjList;
+
+//---------------------------------------------------------------
 void readGraph() {
-    cin >> _V;
-    cin.ignore();
-    cin >> _E;
-    _graph = new list<int>[_V];
-    _graphT = new list<int>[_V];
-    for (int i=0; i < _E; i++) {
-        int u, v;
-        cin >> u;
-        cin >> v;
-        _graph[u-1].push_front(v-1);
-        _graphT = new list<int>[_V];
-    }
+	//scanf("%d,%d", &_V, &_E);
+	std::cin >> _V; std::cin.ignore(); std::cin >> _E;
+	_fwrAdjList = new std::list<int>[_V];
+	_revAdjList = new std::list<int>[_V];
+	for (size_t i = 0; i < _E; i++) {
+		int u, v;
+		//scanf("%d %d", &u, &v);
+		std::cin >> u >> v;
+		_fwrAdjList[u-1].push_front(v-1);
+		_revAdjList[v-1].push_front(u-1);
+	}
 }
 
-void showHistogram(list<int>* graph, int V) {
-    for (int i=0; i < V; i++) {
-        int counter = 0;
-        for (int j=0; j < V; j++) {
-            if (graph[j].size() == i)
-                counter++;
-        }
-        cout << counter << endl;
-    }
+//---------------------------------------------------------------
+void computeDegrees(std::list<int>* _adjList) {
+	std::vector<int> _hist;
+	_hist.resize(_V);
+	for (size_t i = 0; i < _V; i++) _hist[i] = 0;
+	for (size_t i = 0; i < _V; i++) {
+		_hist[_adjList[i].size()]++;
+	}
+	for (size_t i = 0; i < _V; i++) {
+		std::cout << _hist[i] << std::endl;
+	}
 }
 
-void showHistogramOtherImplementation(list<int>* graph, int V) {
-    vector<int> histogram;
-    histogram.resize(V);
-    for (int i=0; i < V; i++)
-        histogram[i] = 0;
-    for (int i=0; i < V; i++) 
-        histogram[graph[i].size()]++;
-    for (int i=0; i < V; i++)
-        cout << histogram[i] << endl;
-}
-
+//---------------------------------------------------------------
 void commonFriends() {
-    for (int i=0; i < _V; i++) {
-        for (int j=0; i < _V; j++) {
-            int counter = 0;
-            for (list<int>::iterator it_i = _graph[i].begin();
-                it_i != _graph[i].end(); it_i++) {
-                for (list<int>::iterator it_j = _graph[j].begin();
-                    it_j != _graph[j].end(); it_j++) {
-                    if (*it_i == *it_j)
-                        counter++;
-                }
-            }
-            cout << counter << " ";
-        }
-        cout << endl;
-    }
+	for (size_t i = 0; i < _V; i++) {
+		for (size_t j = 0; j < _V; j++) {
+			// Alternative to the iterators would be to use set<int> intersects
+			int c = 0;
+			for (std::list<int>::iterator it_i = _fwrAdjList[i].begin(); it_i != _fwrAdjList[i].end(); it_i++) {
+				for (std::list<int>::iterator it_j = _fwrAdjList[j].begin(); it_j != _fwrAdjList[j].end(); it_j++) {
+					if ((*it_i)==(*it_j)) c++;
+				}
+			}
+			std::cout << c << " ";
+		}
+		std::cout << std::endl;
+	}
 }
 
+//---------------------------------------------------------------
 int main() {
-    readGraph();
-    cout << "Histograma 1" << endl;
-    showHistogram(_graph, _V);
-    cout << "Histograma 2" << endl;
-    showHistogram(_graphT, _V);
-    commonFriends();
-    return 0;
+	// Read the graph
+	readGraph();
+
+	// First output
+	std::cout << "Histograma 1" << std::endl;
+	computeDegrees(_fwrAdjList);
+	std::cout << "Histograma 2" << std::endl;
+	computeDegrees(_revAdjList);
+
+	// Second output
+	commonFriends();
+
+	return 0;
 }
