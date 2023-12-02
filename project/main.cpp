@@ -1,46 +1,61 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cstdio>
+
 using namespace std;
 
-int maxValue(int X, int Y, const vector<int>& a, const vector<int>& b, const vector<int>& p, int n) {
-    vector<vector<int>> dp(X + 1, vector<int>(Y + 1, 0));
+// Function to compute the maximum value
+int maxValue(vector<vector<int>>& matrix, int X, int Y) {
+    int maxVal = 0;
 
-    for (int x = 0; x <= X; x++) {
-        for (int y = 0; y <= Y; y++) {
-            // Check each type of piece
-            for (int i = 0; i < n; i++) {
-                // Check if the piece can fit in the current dimensions in either orientation
-                if (x >= a[i] && y >= b[i]) {
-                    dp[x][y] = max(dp[x][y], dp[x - a[i]][y] + p[i]);
-                }
-                if (x >= b[i] && y >= a[i]) {
-                    dp[x][y] = max(dp[x][y], dp[x - b[i]][y] + p[i]);
-                }
+    // Outer loops for dimensions X and Y
+    for (int x = 1; x <= X; x++) {
+        for (int y = 1; y <= Y; y++) {
+            int maxForCurrentXY = 0;
+
+            // First inner loop (horizontal cuts)
+            for (int i = 1; i <= x / 2; i++) {
+                maxForCurrentXY = max(maxForCurrentXY, matrix[i][y] + matrix[x - i][y]);
             }
 
-            // Also check for possible cuts along the other dimension
-            for (int cut = 1; cut < x; cut++) {
-                dp[x][y] = max(dp[x][y], dp[cut][y] + dp[x - cut][y]);
+            // Second inner loop (vertical cuts)
+            for (int j = 1; j <= y / 2; j++) {
+                maxForCurrentXY = max(maxForCurrentXY, matrix[x][j] + matrix[x][y - j]);
             }
-            for (int cut = 1; cut < y; cut++) {
-                dp[x][y] = max(dp[x][y], dp[x][cut] + dp[x][y - cut]);
-            }
+
+            // Update the matrix with the maximum value found for the current x, y
+            matrix[x][y] = max(matrix[x][y], maxForCurrentXY);
+            // Update the overall maximum value
+            maxVal = max(maxVal, matrix[x][y]);
         }
     }
 
-    return dp[X][Y];
+    return maxVal;
 }
 
 int main() {
     int X, Y, n;
-    cin >> X >> Y >> n;
-    vector<int> a(n), b(n), p(n);
+    scanf("%d %d %d", &X, &Y, &n);
 
-    for (int i = 0; i < n; ++i) {
-        cin >> a[i] >> b[i] >> p[i];
+    // Create and initialize the matrix
+    vector<vector<int>> matrix(X + 1, vector<int>(Y + 1, 0));
+
+    // Process each piece and update the matrix
+    for (int i = 0; i < n; i++) {
+        int a, b, p;
+        scanf("%d %d %d", &a, &b, &p);
+        // Ensure the piece fits in the slab in both orientations
+        if (a <= X && b <= Y) {
+            matrix[a][b] = max(matrix[a][b], p);
+        }
+        if (b <= X && a <= Y) {
+            matrix[b][a] = max(matrix[b][a], p);
+        }
     }
 
-    cout << maxValue(X, Y, a, b, p, n) << endl;
+    // Calculate and print the maximum value
+    printf("%d\n", maxValue(matrix, X, Y));
+
     return 0;
 }
