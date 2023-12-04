@@ -1,10 +1,10 @@
 /*
-*   1º Projeto ASA 2023/2024
-*
-*   Alunos:
-*       Pedro Silveira - 106642
-*       Gonçalo Aleixo - 106900
-*
+   1º Projeto ASA 2023/2024
+
+   Autores:
+       Pedro Silveira - 106642
+       Gonçalo Aleixo - 106900
+
 */
 
 #include <iostream>
@@ -15,7 +15,6 @@
 using namespace std;
 
 int maxValue(vector<vector<int>>& matrix, int X, int Y) {
-    int maxVal = 0;
 
     for (int x = 1; x <= X; x++) {
         for (int y = 1; y <= Y; y++) {
@@ -27,11 +26,9 @@ int maxValue(vector<vector<int>>& matrix, int X, int Y) {
                 maxCurrentXY = max(maxCurrentXY, matrix[x][j] + matrix[x][y-j]);
             }
             matrix[x][y] = max(matrix[x][y], maxCurrentXY);
-            maxVal = max(maxVal, matrix[x][y]);
         }
     }
-
-    return maxVal;
+    return matrix[X][Y];
 }
 
 int main() {
