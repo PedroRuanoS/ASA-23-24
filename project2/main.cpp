@@ -1,68 +1,59 @@
+/*
+
+    800 - 1 teste com Time Limit Exceeded 3 testes com Runtime Error 8 testes com Wrong Answer 10 testes com Accepted
+
+*/
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
 
 using namespace std;
 
-class Graph {
-    int V; // Number of vertices
-    vector<vector<int>> adj; // Adjacency list
-
-public:
-    Graph(int V) : V(V), adj(V) {}
-
-    void addEdge(int v, int w) {
-        // Adjusting for 0-based index as C++ uses 0-based indexing
-        adj[v - 1].push_back(w - 1);
+int dfs(int node, const vector<vector<int>>& graph, vector<int>& memo, vector<bool>& visited) {
+    if (visited[node]) {
+        return 0; // In case of a cycle, do not continue further in this path
     }
 
-    // Utility function for finding the longest path using DFS
-    int longestPathDFS(int v, vector<bool>& visited, vector<bool>& currentPath, int currentDepth) {
-        visited[v] = true;
-        currentPath[v] = true;
-
-        int maxDepth = currentDepth;
-        for (int i : adj[v]) {
-            if (!visited[i]) {
-                maxDepth = max(maxDepth, longestPathDFS(i, visited, currentPath, currentDepth + 1));
-            } else if (currentPath[i]) {
-                // Cycle detected, so ignore this path
-                continue;
-            }
-        }
-
-        // Remove from current path
-        currentPath[v] = false;
-        return maxDepth;
+    if (memo[node] != -1) {
+        return memo[node];
     }
 
-    // Function to find the longest path in the graph
-    int longestPath() {
-        int maxDepth = 0;
+    visited[node] = true;
+    int max_dist = 0;
 
-        for (int i = 0; i < V; i++) {
-            vector<bool> visited(V, false);
-            vector<bool> currentPath(V, false);
-            maxDepth = max(maxDepth, longestPathDFS(i, visited, currentPath, 1));
-        }
-
-        return maxDepth;
+    for (int neighbor : graph[node]) {
+        max_dist = max(max_dist, dfs(neighbor, graph, memo, visited) + 1);
     }
-};
+
+    visited[node] = false; // Mark the node as unvisited for other paths
+    memo[node] = max_dist;
+    return max_dist;
+}
+
+int findLongestPath(const vector<vector<int>>& graph, int n) {
+    vector<int> memo(n, -1);
+    int longest_path = 0;
+
+    for (int i = 0; i < n; i++) {
+        vector<bool> visited(n, false);
+        longest_path = max(longest_path, dfs(i, graph, memo, visited));
+    }
+
+    return longest_path;
+}
 
 int main() {
     int n, m;
     cin >> n >> m;
-
-    Graph g(n);
+    vector<vector<int>> graph(n);
 
     for (int i = 0; i < m; i++) {
-        int x, y;
-        cin >> x >> y;
-        g.addEdge(x, y);
+        int u, v;
+        cin >> u >> v;
+        graph[u - 1].push_back(v - 1); // Adjust for 0-based indexing
     }
 
-    cout << g.longestPath() << endl;
-
+    cout << findLongestPath(graph, n) << endl;
     return 0;
 }
