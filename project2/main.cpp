@@ -1,3 +1,12 @@
+/*
+   2º Projeto ASA 2023/2024
+
+   Autores:
+       Pedro Silveira - 106642
+       Gonçalo Aleixo - 106900
+
+*/
+
 #include <iostream>
 #include <vector>
 #include <stack>
@@ -39,11 +48,13 @@ vector<int> dfs(vector<vector<int>>& graph) {
     int time = 0;
     vector<int> finish(n, 0);
     vector<int> color(n, 0); // 0: white, 1: gray, 2: black
+
     for (int i = 0; i < n; ++i) {
         if (color[i] == 0) {
             time = dfs_visit(i, graph, color, finish, time);
         }
     }
+    
     return finish;
 }
 
