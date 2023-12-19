@@ -9,29 +9,27 @@ using namespace std;
 vector<int> dfs(vector<vector<int>>& graph);
 int dfs_visit(int v, vector<vector<int>>& graph, vector<int>& color, vector<int>& finish, int time);
 int dfs_transposed(vector<vector<int>>& transposedGraph, vector<int>& finish);
-void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<int>& color,vector<int>& pathLength);
-int id = 1;
-vector<int> ids;
+void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<int>& color,vector<int>& pathLength, vector<int>& ids, int id);
 
 int main() {
     int n, m;
-    scanf("%d %d", &n, &m);
+    cin >> n >> m;
     vector<vector<int>> graph(n), transposedGraph(n);
 
     for (int i = 0; i < m; ++i) {
         int x, y;
-        scanf("%d %d", &x, &y);
+        cin >> x >> y;
         graph[x - 1].push_back(y - 1);
         transposedGraph[y - 1].push_back(x - 1);
     }
 
     // Perform DFS on the original graph
     vector<int> finish = dfs(graph);
-    
+
     // Perform DFS on the transposed graph and find the longest path
     int longestPath = dfs_transposed(transposedGraph, finish);
 
-    printf("%d\n", longestPath);
+    cout << longestPath << endl;
 
     return 0;
 }
@@ -56,7 +54,7 @@ int dfs_visit(int v, vector<vector<int>>& graph, vector<int>& color, vector<int>
     while (!s.empty()) {
         int u = s.top();
         if (color[u] == 0) {
-            color[u] = 1; 
+            color[u] = 1;
             time++;
         }
 
@@ -65,7 +63,6 @@ int dfs_visit(int v, vector<vector<int>>& graph, vector<int>& color, vector<int>
             if (color[adj] == 0) {
                 s.push(adj);
                 allAdjacentVisited = false;
-                break;
             }
         }
 
@@ -81,10 +78,11 @@ int dfs_visit(int v, vector<vector<int>>& graph, vector<int>& color, vector<int>
 
 int dfs_transposed(vector<vector<int>>& transposedGraph, vector<int>& finish) {
     int n = transposedGraph.size();
+    int id = 1;
     vector<int> color(n, 0);
     vector<int> pathLength(n, 0);
     vector<int> order(n);
-    ids.resize(n, 0);
+    vector<int> ids(n, 0);
     iota(order.begin(), order.end(), 0);
 
     // Sorting vertices by finish time in descending order
@@ -92,7 +90,7 @@ int dfs_transposed(vector<vector<int>>& transposedGraph, vector<int>& finish) {
 
     for (int i : order) {
         if (color[i] == 0) {
-            dfs_visit_transposed(i, transposedGraph, color, pathLength);
+            dfs_visit_transposed(i, transposedGraph, color, pathLength, ids, id);
             id++;
         }
     }
@@ -100,7 +98,7 @@ int dfs_transposed(vector<vector<int>>& transposedGraph, vector<int>& finish) {
     return *max_element(pathLength.begin(), pathLength.end());
 }
 
-void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<int>& color, vector<int>& pathLength) {
+void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<int>& color, vector<int>& pathLength, vector<int>& ids, int id) {
     stack<int> s;
     s.push(v);
     
@@ -118,13 +116,9 @@ void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<in
                 color[adj] = 1;
                 ids[adj] = id;
                 allAdjacentVisited = false;
-                break;
             }
- 
             if (ids[u] != ids[adj]) {
                 pathLength[u] = max(pathLength[u], pathLength[adj] + 1);
-            } else {
-                pathLength[u] = max(pathLength[u], pathLength[adj]);
             }
         }
 

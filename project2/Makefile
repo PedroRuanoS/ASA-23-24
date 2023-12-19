@@ -8,7 +8,7 @@ CXXFLAGS = -std=c++11 -O3 -Wall -lm
 TARGET = run
 
 # Source file
-SRC = test3.cpp
+SRC = main.cpp
 
 # Default target
 all: $(TARGET)
