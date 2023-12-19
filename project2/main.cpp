@@ -9,9 +9,7 @@ using namespace std;
 vector<int> dfs(vector<vector<int>>& graph);
 int dfs_visit(int v, vector<vector<int>>& graph, vector<int>& color, vector<int>& finish, int time);
 int dfs_transposed(vector<vector<int>>& transposedGraph, vector<int>& finish);
-void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<int>& color,vector<int>& pathLength);
-int id = 1;
-vector<int> ids;
+void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<int>& color, vector<int>& pathLength, vector<int>& scc_ids, int scc_id);
 
 int main() {
     int n, m;
@@ -80,11 +78,11 @@ int dfs_visit(int v, vector<vector<int>>& graph, vector<int>& color, vector<int>
 }
 
 int dfs_transposed(vector<vector<int>>& transposedGraph, vector<int>& finish) {
-    int n = transposedGraph.size();
+    int n = transposedGraph.size(), scc_id = 1;
     vector<int> color(n, 0);
     vector<int> pathLength(n, 0);
     vector<int> order(n);
-    ids.resize(n, 0);
+    vector<int> scc_ids(n, 0);
     iota(order.begin(), order.end(), 0);
 
     // Sorting vertices by finish time in descending order
@@ -92,15 +90,15 @@ int dfs_transposed(vector<vector<int>>& transposedGraph, vector<int>& finish) {
 
     for (int i : order) {
         if (color[i] == 0) {
-            dfs_visit_transposed(i, transposedGraph, color, pathLength);
-            id++;
+            dfs_visit_transposed(i, transposedGraph, color, pathLength, scc_ids, scc_id);
+            scc_id++;
         }
     }
 
     return *max_element(pathLength.begin(), pathLength.end());
 }
 
-void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<int>& color, vector<int>& pathLength) {
+void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<int>& color, vector<int>& pathLength, vector<int>& scc_ids, int scc_id) {
     stack<int> s;
     s.push(v);
     
@@ -108,7 +106,7 @@ void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<in
         int u = s.top();
         if (color[u] == 0) {
             color[u] = 1;
-            ids[u] = id;
+            scc_ids[u] = scc_id;
         }
 
         bool allAdjacentVisited = true;
@@ -116,12 +114,12 @@ void dfs_visit_transposed(int v, vector<vector<int>>& transposedGraph, vector<in
             if (color[adj] == 0) {
                 s.push(adj);
                 color[adj] = 1;
-                ids[adj] = id;
+                scc_ids[adj] = scc_id;
                 allAdjacentVisited = false;
                 break;
             }
  
-            if (ids[u] != ids[adj]) {
+            if (scc_ids[u] != scc_ids[adj]) {
                 pathLength[u] = max(pathLength[u], pathLength[adj] + 1);
             } else {
                 pathLength[u] = max(pathLength[u], pathLength[adj]);
