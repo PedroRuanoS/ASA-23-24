@@ -21,8 +21,7 @@ def solve_problem(t, p, max_toys, x, y, toys, packs):
     for i in range(t):
         prob += x[i] >= lpSum([y[j] for j in range(p) if i + 1 in pack_items_set[j]])
 
-    solver = GLPK(msg=0) 
-    prob.solve(solver)
+    prob.solve(GLPK(msg=0))
     return value(prob.objective)
 
 def main():
@@ -44,5 +43,4 @@ def main():
     max_profit = solve_problem(t, p, max_toys, toy_vars, pack_vars, toys, packages)
     print(max_profit)
 
-if __name__ == "__main__":
-    main()
+main()
