@@ -1,40 +1,48 @@
-import pulp
+'''
+   3º Projeto ASA 2023/2024
 
-def solve_linear_programming(t, p, max_toys, toys, packages):
-    # Initialize LP problem
-    prob = pulp.LpProblem("MaximumProfit", pulp.LpMaximize)
+   Autores:
+       Pedro Silveira - 106642
+       Gonçalo Aleixo - 106900
 
-    # Create decision variables for toys and packages
-    toy_vars = [pulp.LpVariable(f"toy_{i}", 0, toys[i][1]) for i in range(t)]
-    package_vars = [pulp.LpVariable(f"package_{i}", 0, cat="Integer") for i in range(p)]
+'''
 
-    # Objective function: Maximize profit
-    prob += pulp.lpSum([toys[i][0] * toy_vars[i] for i in range(t)] +
-                       [packages[i][3] * package_vars[i] for i in range(p)])
+from pulp import LpProblem, LpMaximize, LpVariable, lpSum, GLPK, LpInteger, value
 
-    # Constraints
-    # Constraint on total number of toys produced
-    prob += pulp.lpSum([toy_vars[i] for i in range(t)]) <= max_toys
+def solve_problem(t, p, max_toys, x, y, toys, packs):
+    prob = LpProblem("Max Profit", LpMaximize)
 
-    # Constraints for packages
-    for i in range(p):
-        ijk = packages[i][:3]
-        prob += pulp.lpSum([toy_vars[j-1] for j in ijk]) >= 3 * package_vars[i]
+    toy_profits = [toys[i]['l'] for i in range(t)]
+    prob += lpSum([x[i] * toy_profits[i] for i in range(t)]) + lpSum([y[i] * (packs[i]['profit']
+    - lpSum([toy_profits[toy - 1] for toy in packs[i]['items']])) for i in range(p)])
 
-    # Solve the problem
-    prob.solve(pulp.PULP_CBC_CMD(msg=False))  # Suppress detailed output
+    prob += lpSum(x.values()) <= max_toys
+    pack_items_set = [set(packs[i]['items']) for i in range(p)]
+    for i in range(t):
+        prob += x[i] >= lpSum([y[j] for j in range(p) if i + 1 in pack_items_set[j]])
 
-    # Return the result
-    return pulp.value(prob.objective) if prob.status == 1 else "No feasible solution found"
+    solver = GLPK(msg=0) 
+    prob.solve(solver)
+    return value(prob.objective)
 
 def main():
-    # Read input
     t, p, max_toys = map(int, input().split())
-    toys = [list(map(int, input().split())) for _ in range(t)]
-    packages = [list(map(int, input().split())) for _ in range(p)]
 
-    # Solve and output the result
-    print(int(solve_linear_programming(t, p, max_toys, toys, packages)))
+    toy_vars, toys = {}, {}
+    for i in range(t):
+        profit, limit = map(int, input().split())
+        toys[i] = {'l': profit, 'c': limit}
+        toy_vars[i] = LpVariable(f"toy_vars{i}", 0, toys[i]['c'], LpInteger)
+
+    pack_vars, packages = {}, {}
+    for i in range(p):
+        items_profit = list(map(int, input().split()))
+        items, profit = items_profit[:-1], items_profit[-1]
+        packages[i] = {'items': items, 'profit': profit}
+        pack_vars[i] = LpVariable("pack_vars%d" % i, 0, None, LpInteger)
+
+    max_profit = solve_problem(t, p, max_toys, toy_vars, pack_vars, toys, packages)
+    print(max_profit)
 
 if __name__ == "__main__":
     main()
